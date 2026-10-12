@@ -1,0 +1,93 @@
+# Конфигурация парсера новостей для селлеров.
+#
+# Чтобы добавить сайт того же типа (ещё один телеграм-канал или RSS-ленту),
+# достаточно дописать блок [[sources]]. Новый тип сайта = новый модуль
+# в seller_news/sources/ с классом, помеченным @register("тип").
+#
+# proxy:
+#   "direct" — мимо системного прокси (ozon/wb/российские СМИ рвут TLS
+#              через зарубежный выход прокси)
+#   "system" — через системный прокси / HTTP(S)_PROXY (нужен для t.me)
+#   "http://host:port" — конкретный прокси
+
+# Нейросеть для `python -m seller_news page`: выжимки, темы, важность, дубли и обзор «главного».
+# Ключ берётся из переменной окружения ANTHROPIC_API_KEY.
+# api.anthropic.com из РФ не открывается, поэтому proxy = "system" (или URL зарубежного прокси).
+[ai]
+enabled = true
+model = "claude-opus-5-5"
+effort = "medium"   # low / medium / high — глубже, но дольше и дороже
+proxy = "system"
+
+# Маркетплейсы и ключевые слова для определения, о ком новость.
+# Ключевые слова — регулярные выражения, регистр не важен.
+[marketplaces.ozon]
+name = "Ozon"
+keywords = ['ozon', 'озон\w*']
+
+[marketplaces.wb]
+name = "Wildberries"
+keywords = ['wildberries', 'вайлдберриз', 'валдбер\w*', 'вб', 'wb', 'rwb']
+
+# --- Официальные каналы ---
+
+[[sources]]
+id = "ozon_tg"
+type = "telegram"
+name = "Ozon Marketplace (TG)"
+channel = "ozonmarketplace"
+marketplace = "ozon"
+proxy = "system"
+
+[[sources]]
+id = "wb_tg"
+type = "telegram"
+name = "WB Партнёры (TG)"
+channel = "wbsellerofficial"
+marketplace = "wb"
+proxy = "system"
+
+[[sources]]
+id = "wb_api_tg"
+type = "telegram"
+name = "WB API (TG)"
+channel = "wb_api_notifications"
+marketplace = "wb"
+proxy = "system"
+
+# --- Официальные сайты (через браузер Chromium/Playwright, у них JS-антибот) ---
+# headless = false — окно Chromium открывается за пределами экрана (WB не пускает headless).
+
+[[sources]]
+id = "ozon_site"
+type = "ozon_news"
+name = "seller.ozon.ru"
+category = "sellers"   # sellers — продавцам, pvz — владельцам ПВЗ, "" — все
+marketplace = "ozon"
+proxy = "direct"
+
+[[sources]]
+id = "wb_dev"
+type = "wb_release_notes"
+name = "dev.wildberries.ru"
+marketplace = "wb"
+proxy = "direct"
+headless = false
+
+# --- Отраслевые СМИ: берутся только новости, где упомянут маркетплейс ---
+
+[[sources]]
+id = "oborot"
+type = "rss"
+name = "Oborot.ru"
+url = "https://oborot.ru/feed/"
+marketplace = "auto"
+proxy = "direct"
+
+[[sources]]
+id = "retail_ru"
+type = "rss"
+name = "Retail.ru"
+url = "https://www.retail.ru/rss/news/"
+marketplace = "auto"
+proxy = "direct"

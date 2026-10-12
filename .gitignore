@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.venv/
+# куки антибота для Chromium
+.browser-profiles/
+# сгенерированные страница и выгрузки
+site/
+news_*.txt
